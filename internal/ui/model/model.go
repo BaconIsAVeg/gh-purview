@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/anomaly/ghr/internal/github"
 	"github.com/anomaly/ghr/internal/types"
@@ -15,6 +16,7 @@ import (
 	"github.com/anomaly/ghr/internal/ui/styles"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/pkg/browser"
 )
 
 type Model struct {
@@ -135,20 +137,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
 				cmds = append(cmds, m.loadDiff(pr))
 			}
-		case "p", "escape":
-			m.preview.Toggle()
-			if m.preview.Visible() {
+		case "p", "enter":
+			if !m.preview.Visible() {
+				m.preview.SetVisible(true)
 				pr := m.prlist.SelectedPR()
 				m.preview.SetPR(pr)
 				m.statusbar.SetMode("diff mode")
 				m.statusbar.SetStats(0, 0)
 				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
 				cmds = append(cmds, m.loadDiff(pr))
-			} else {
+				m.updateLayout()
+			}
+		case "esc":
+			if m.preview.Visible() {
+				m.preview.SetVisible(false)
 				m.statusbar.SetMode("list mode")
 				m.statusbar.SetStats(0, 0)
+				m.updateLayout()
 			}
-			m.updateLayout()
 		case "r":
 			if !m.preview.Visible() {
 				m.loading = true
@@ -166,6 +172,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.preview.Visible() {
 				pr := m.prlist.SelectedPR()
 				if pr != nil {
+					cmds = append(cmds, m.notification.Show("Opening on GitHub.com..."))
 					cmds = append(cmds, m.openOnWeb(pr))
 				}
 			}
@@ -228,15 +235,16 @@ func (m Model) approvePR(pr *types.PR) tea.Cmd {
 
 func (m Model) openOnWeb(pr *types.PR) tea.Cmd {
 	return func() tea.Msg {
-		return openOnWebMsg{pr: pr}
+		if pr != nil && pr.URL != "" {
+			browser.Stdout = io.Discard
+			browser.Stderr = io.Discard
+			browser.OpenURL(pr.URL)
+		}
+		return nil
 	}
 }
 
 type approvePRMsg struct {
-	pr *types.PR
-}
-
-type openOnWebMsg struct {
 	pr *types.PR
 }
 

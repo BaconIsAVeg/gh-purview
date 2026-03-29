@@ -49,7 +49,7 @@ func (m Model) getKeybinds() []KeyBinding {
 			{Key: "^n/^p", Desc: "scroll"},
 			{Key: "a", Desc: "approve"},
 			{Key: "o", Desc: "open on web"},
-			{Key: "p", Desc: "close"},
+			{Key: "esc", Desc: "close"},
 		}
 	default:
 		return []KeyBinding{
