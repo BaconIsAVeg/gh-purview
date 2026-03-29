@@ -61,7 +61,7 @@ func (c *Client) FetchPRDiff(ctx context.Context, pr *types.PR) (*DiffResult, er
 
 func formatFileList(files []*github.CommitFile, additions, deletions, changedFiles int) string {
 	var b string
-	b = fmt.Sprintf("Large PR: %d files changed, +%d -%d\n\n", changedFiles, additions, deletions)
+	b = fmt.Sprintf("Large PR: %d files changed, only showing file list.\n\n", changedFiles)
 	b += "Files changed:\n"
 	for i, f := range files {
 		if i >= 50 {

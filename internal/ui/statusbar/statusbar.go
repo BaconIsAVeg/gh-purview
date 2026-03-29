@@ -23,7 +23,7 @@ type Model struct {
 
 func New(s *styles.Palette, version string) Model {
 	return Model{
-		mode:    "pr list",
+		mode:    "list mode",
 		styles:  s,
 		version: version,
 	}
@@ -44,7 +44,7 @@ func (m *Model) SetWidth(width int) {
 
 func (m Model) getKeybinds() []KeyBinding {
 	switch m.mode {
-	case "preview":
+	case "diff mode":
 		return []KeyBinding{
 			{Key: "^n/^p", Desc: "scroll"},
 			{Key: "a", Desc: "approve"},
@@ -82,7 +82,7 @@ func (m Model) View() string {
 	middleWidth := max(m.width-leftWidth-rightWidth, 0)
 
 	var middleText string
-	if m.mode == "preview" && (m.additions > 0 || m.deletions > 0) {
+	if m.mode == "diff mode" && (m.additions > 0 || m.deletions > 0) {
 		middleText = fmt.Sprintf(" +%d -%d ", m.additions, m.deletions)
 	} else {
 		middleText = " " + m.version

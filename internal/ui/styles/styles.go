@@ -22,6 +22,10 @@ type Palette struct {
 	Notification     lipgloss.Style
 	NotificationInfo lipgloss.Style
 	NotificationWarn lipgloss.Style
+	DiffAdd          lipgloss.Style
+	DiffDelete       lipgloss.Style
+	DiffHeader       lipgloss.Style
+	DiffFileHeader   lipgloss.Style
 }
 
 func NewPalette() *Palette {
@@ -103,6 +107,16 @@ func NewPalette() *Palette {
 			Background(warnBg).
 			Foreground(notificationFg).
 			Padding(0, 1).
+			Bold(true),
+		DiffAdd: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("34")),
+		DiffDelete: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("160")),
+		DiffHeader: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("36")).
+			Bold(true),
+		DiffFileHeader: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("15")).
 			Bold(true),
 	}
 }

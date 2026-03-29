@@ -1,6 +1,8 @@
 package preview
 
 import (
+	"strings"
+
 	"github.com/anomaly/ghr/internal/types"
 	"github.com/anomaly/ghr/internal/ui/styles"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -28,14 +30,19 @@ func (m *Model) SetPR(pr *types.PR) {
 	if pr == nil {
 		m.viewport.SetContent("")
 	}
+	m.viewport.GotoTop()
 }
 
 func (m *Model) SetDiffContent(content string) {
-	m.viewport.SetContent(content)
+	m.viewport.SetContent(m.colorizeDiff(content))
+	m.viewport.GotoTop()
 }
 
 func (m *Model) SetVisible(visible bool) {
 	m.visible = visible
+	if visible {
+		m.viewport.GotoTop()
+	}
 }
 
 func (m *Model) Toggle() {
@@ -79,9 +86,45 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m *Model) ScrollUp(lines int) {
-	m.viewport.LineUp(lines)
+	m.viewport.ScrollUp(lines)
 }
 
 func (m *Model) ScrollDown(lines int) {
-	m.viewport.LineDown(lines)
+	m.viewport.ScrollDown(lines)
+}
+
+func (m *Model) colorizeDiff(content string) string {
+	lines := strings.Split(content, "\n")
+	var b strings.Builder
+
+	for i, line := range lines {
+		if i > 0 {
+			b.WriteString("\n")
+		}
+		b.WriteString(m.colorizeLine(line))
+	}
+
+	return b.String()
+}
+
+func (m *Model) colorizeLine(line string) string {
+	if len(line) == 0 {
+		return line
+	}
+
+	switch {
+	case strings.HasPrefix(line, "diff --git"),
+		strings.HasPrefix(line, "index "),
+		strings.HasPrefix(line, "--- "),
+		strings.HasPrefix(line, "+++ "):
+		return m.styles.DiffFileHeader.Render(line)
+	case strings.HasPrefix(line, "@@"):
+		return m.styles.DiffHeader.Render(line)
+	case strings.HasPrefix(line, "+"):
+		return m.styles.DiffAdd.Render(line)
+	case strings.HasPrefix(line, "-"):
+		return m.styles.DiffDelete.Render(line)
+	default:
+		return line
+	}
 }

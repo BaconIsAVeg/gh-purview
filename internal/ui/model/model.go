@@ -112,7 +112,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q":
 			if m.preview.Visible() {
 				m.preview.Toggle()
-				m.statusbar.SetMode("pr list")
+				m.statusbar.SetMode("list mode")
 				m.updateLayout()
 			} else {
 				return m, tea.Quit
@@ -140,12 +140,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.preview.Visible() {
 				pr := m.prlist.SelectedPR()
 				m.preview.SetPR(pr)
-				m.statusbar.SetMode("preview")
+				m.statusbar.SetMode("diff mode")
 				m.statusbar.SetStats(0, 0)
 				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
 				cmds = append(cmds, m.loadDiff(pr))
 			} else {
-				m.statusbar.SetMode("pr list")
+				m.statusbar.SetMode("list mode")
 				m.statusbar.SetStats(0, 0)
 			}
 			m.updateLayout()
