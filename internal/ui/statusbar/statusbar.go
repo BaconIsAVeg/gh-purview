@@ -1,6 +1,8 @@
 package statusbar
 
 import (
+	"fmt"
+
 	"github.com/anomaly/ghr/internal/ui/styles"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -11,10 +13,12 @@ type KeyBinding struct {
 }
 
 type Model struct {
-	mode    string
-	version string
-	width   int
-	styles  *styles.Palette
+	mode      string
+	version   string
+	width     int
+	styles    *styles.Palette
+	additions int
+	deletions int
 }
 
 func New(s *styles.Palette, version string) Model {
@@ -29,6 +33,11 @@ func (m *Model) SetMode(mode string) {
 	m.mode = mode
 }
 
+func (m *Model) SetStats(additions, deletions int) {
+	m.additions = additions
+	m.deletions = deletions
+}
+
 func (m *Model) SetWidth(width int) {
 	m.width = width
 }
@@ -37,6 +46,7 @@ func (m Model) getKeybinds() []KeyBinding {
 	switch m.mode {
 	case "preview":
 		return []KeyBinding{
+			{Key: "^n/^p", Desc: "scroll"},
 			{Key: "a", Desc: "approve"},
 			{Key: "o", Desc: "open on web"},
 			{Key: "p", Desc: "close"},
@@ -71,11 +81,16 @@ func (m Model) View() string {
 	rightWidth := lipgloss.Width(keysContent)
 	middleWidth := max(m.width-leftWidth-rightWidth, 0)
 
-	// Placeholder for future information
+	var middleText string
+	if m.mode == "preview" && (m.additions > 0 || m.deletions > 0) {
+		middleText = fmt.Sprintf(" +%d -%d ", m.additions, m.deletions)
+	} else {
+		middleText = " " + m.version
+	}
 	middleContent := lipgloss.NewStyle().
 		Background(barBg).
 		Width(middleWidth).
-		Render(" " + m.version)
+		Render(middleText)
 
 	statusBar := lipgloss.JoinHorizontal(lipgloss.Top, modeContent, middleContent, keysContent)
 

@@ -1,8 +1,6 @@
 package preview
 
 import (
-	"strings"
-
 	"github.com/anomaly/ghr/internal/types"
 	"github.com/anomaly/ghr/internal/ui/styles"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -16,7 +14,6 @@ type Model struct {
 	height   int
 	styles   *styles.Palette
 	viewport viewport.Model
-	content  string
 }
 
 func New(s *styles.Palette) Model {
@@ -28,10 +25,13 @@ func New(s *styles.Palette) Model {
 
 func (m *Model) SetPR(pr *types.PR) {
 	m.pr = pr
-	if pr != nil {
-		m.content = m.generateContent(pr)
-		m.viewport.SetContent(m.content)
+	if pr == nil {
+		m.viewport.SetContent("")
 	}
+}
+
+func (m *Model) SetDiffContent(content string) {
+	m.viewport.SetContent(content)
 }
 
 func (m *Model) SetVisible(visible bool) {
@@ -72,16 +72,16 @@ func (m Model) View() string {
 	return border.Render(inner)
 }
 
-func (m Model) generateContent(pr *types.PR) string {
-	var b strings.Builder
-
-	b.WriteString("(diff content would be fetched from GitHub API)\n")
-
-	return b.String()
-}
-
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.viewport, cmd = m.viewport.Update(msg)
 	return m, cmd
+}
+
+func (m *Model) ScrollUp(lines int) {
+	m.viewport.LineUp(lines)
+}
+
+func (m *Model) ScrollDown(lines int) {
+	m.viewport.LineDown(lines)
 }

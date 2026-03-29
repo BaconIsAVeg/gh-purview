@@ -68,11 +68,37 @@ func (m Model) loadPRs() tea.Cmd {
 	}
 }
 
+func (m Model) loadDiff(pr *types.PR) tea.Cmd {
+	return func() tea.Msg {
+		if m.ghClient == nil || pr == nil {
+			return diffLoadedMsg{err: fmt.Errorf("cannot load diff")}
+		}
+		result, err := m.ghClient.FetchPRDiff(context.Background(), pr)
+		if err != nil {
+			return diffLoadedMsg{err: err}
+		}
+		return diffLoadedMsg{
+			content:   result.Content,
+			truncated: result.Truncated,
+			additions: result.Additions,
+			deletions: result.Deletions,
+		}
+	}
+}
+
 type prsLoadedMsg struct {
 	prs    []types.PR
 	total  int
 	err    error
 	filter string
+}
+
+type diffLoadedMsg struct {
+	content   string
+	truncated bool
+	additions int
+	deletions int
+	err       error
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -94,20 +120,33 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "j", "down":
 			m.prlist.CursorDown()
 			if m.preview.Visible() {
-				m.preview.SetPR(m.prlist.SelectedPR())
+				pr := m.prlist.SelectedPR()
+				m.preview.SetPR(pr)
+				m.statusbar.SetStats(0, 0)
+				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
+				cmds = append(cmds, m.loadDiff(pr))
 			}
 		case "k", "up":
 			m.prlist.CursorUp()
 			if m.preview.Visible() {
-				m.preview.SetPR(m.prlist.SelectedPR())
+				pr := m.prlist.SelectedPR()
+				m.preview.SetPR(pr)
+				m.statusbar.SetStats(0, 0)
+				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
+				cmds = append(cmds, m.loadDiff(pr))
 			}
 		case "p", "escape":
 			m.preview.Toggle()
 			if m.preview.Visible() {
-				m.preview.SetPR(m.prlist.SelectedPR())
+				pr := m.prlist.SelectedPR()
+				m.preview.SetPR(pr)
 				m.statusbar.SetMode("preview")
+				m.statusbar.SetStats(0, 0)
+				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
+				cmds = append(cmds, m.loadDiff(pr))
 			} else {
 				m.statusbar.SetMode("pr list")
+				m.statusbar.SetStats(0, 0)
 			}
 			m.updateLayout()
 		case "r":
@@ -130,6 +169,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					cmds = append(cmds, m.openOnWeb(pr))
 				}
 			}
+		case "ctrl+n":
+			if m.preview.Visible() {
+				m.preview.ScrollDown(1)
+			}
+		case "ctrl+p":
+			if m.preview.Visible() {
+				m.preview.ScrollUp(1)
+			}
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -147,6 +194,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.header.SetCount(len(msg.prs), msg.total)
 		}
 		m.updateLayout()
+	case diffLoadedMsg:
+		m.notification.Hide()
+		if msg.err != nil {
+			m.preview.SetDiffContent(fmt.Sprintf("Error loading diff: %v", msg.err))
+			m.statusbar.SetStats(0, 0)
+		} else {
+			m.preview.SetDiffContent(msg.content)
+			m.statusbar.SetStats(msg.additions, msg.deletions)
+		}
 	case approvePRMsg:
 		if msg.pr != nil {
 			msgText := fmt.Sprintf("PR #%d approved", msg.pr.Number)
