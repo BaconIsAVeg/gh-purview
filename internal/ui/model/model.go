@@ -88,6 +88,36 @@ func (m Model) loadDiff(pr *types.PR) tea.Cmd {
 	}
 }
 
+func (m *Model) openPreview() []tea.Cmd {
+	m.preview.SetVisible(true)
+	pr := m.prlist.SelectedPR()
+	m.preview.SetPR(pr)
+	m.statusbar.SetMode("diff mode")
+	m.statusbar.SetStats(0, 0)
+	m.updateLayout()
+	return []tea.Cmd{
+		m.notification.ShowInfo("Loading diff..."),
+		m.loadDiff(pr),
+	}
+}
+
+func (m *Model) closePreview() {
+	m.preview.SetVisible(false)
+	m.statusbar.SetMode("list mode")
+	m.statusbar.SetStats(0, 0)
+	m.updateLayout()
+}
+
+func (m *Model) loadDiffForSelectedPR() []tea.Cmd {
+	pr := m.prlist.SelectedPR()
+	m.preview.SetPR(pr)
+	m.statusbar.SetStats(0, 0)
+	return []tea.Cmd{
+		m.notification.ShowInfo("Loading diff..."),
+		m.loadDiff(pr),
+	}
+}
+
 type prsLoadedMsg struct {
 	prs    []types.PR
 	total  int
@@ -108,83 +138,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c":
-			return m, tea.Quit
-		case "q":
-			if m.preview.Visible() {
-				m.preview.Toggle()
-				m.statusbar.SetMode("list mode")
-				m.updateLayout()
-			} else {
-				return m, tea.Quit
-			}
-		case "j", "down":
-			m.prlist.CursorDown()
-			if m.preview.Visible() {
-				pr := m.prlist.SelectedPR()
-				m.preview.SetPR(pr)
-				m.statusbar.SetStats(0, 0)
-				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
-				cmds = append(cmds, m.loadDiff(pr))
-			}
-		case "k", "up":
-			m.prlist.CursorUp()
-			if m.preview.Visible() {
-				pr := m.prlist.SelectedPR()
-				m.preview.SetPR(pr)
-				m.statusbar.SetStats(0, 0)
-				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
-				cmds = append(cmds, m.loadDiff(pr))
-			}
-		case "p", "enter":
-			if !m.preview.Visible() {
-				m.preview.SetVisible(true)
-				pr := m.prlist.SelectedPR()
-				m.preview.SetPR(pr)
-				m.statusbar.SetMode("diff mode")
-				m.statusbar.SetStats(0, 0)
-				cmds = append(cmds, m.notification.ShowInfo("Loading diff..."))
-				cmds = append(cmds, m.loadDiff(pr))
-				m.updateLayout()
-			}
-		case "esc":
-			if m.preview.Visible() {
-				m.preview.SetVisible(false)
-				m.statusbar.SetMode("list mode")
-				m.statusbar.SetStats(0, 0)
-				m.updateLayout()
-			}
-		case "r":
-			if !m.preview.Visible() {
-				m.loading = true
-				cmds = append(cmds, m.notification.ShowInfo("Please wait..."))
-				cmds = append(cmds, m.loadPRs())
-			}
-		case "a":
-			if m.preview.Visible() {
-				pr := m.prlist.SelectedPR()
-				if pr != nil {
-					cmds = append(cmds, m.approvePR(pr))
-				}
-			}
-		case "o":
-			if m.preview.Visible() {
-				pr := m.prlist.SelectedPR()
-				if pr != nil {
-					cmds = append(cmds, m.notification.Show("Opening on GitHub.com..."))
-					cmds = append(cmds, m.openOnWeb(pr))
-				}
-			}
-		case "ctrl+n":
-			if m.preview.Visible() {
-				m.preview.ScrollDown(1)
-			}
-		case "ctrl+p":
-			if m.preview.Visible() {
-				m.preview.ScrollUp(1)
-			}
-		}
+		cmds = m.handleKey(msg)
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
@@ -212,8 +166,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case approvePRMsg:
 		if msg.pr != nil {
-			msgText := fmt.Sprintf("PR #%d approved", msg.pr.Number)
-			cmds = append(cmds, m.notification.Show(msgText))
+			cmds = append(cmds, m.notification.Show(fmt.Sprintf("PR #%d approved", msg.pr.Number)))
 			m.updateLayout()
 		}
 	case notification.HideMsg:
@@ -225,6 +178,68 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *Model) handleKey(msg tea.KeyMsg) []tea.Cmd {
+	var cmds []tea.Cmd
+
+	switch msg.String() {
+	case "ctrl+c":
+		return []tea.Cmd{tea.Quit}
+	case "q":
+		if m.preview.Visible() {
+			m.closePreview()
+		} else {
+			return []tea.Cmd{tea.Quit}
+		}
+	case "esc":
+		if m.preview.Visible() {
+			m.closePreview()
+		}
+	case "j", "down":
+		m.prlist.CursorDown()
+		if m.preview.Visible() {
+			cmds = append(cmds, m.loadDiffForSelectedPR()...)
+		}
+	case "k", "up":
+		m.prlist.CursorUp()
+		if m.preview.Visible() {
+			cmds = append(cmds, m.loadDiffForSelectedPR()...)
+		}
+	case "p", "enter":
+		if !m.preview.Visible() {
+			cmds = append(cmds, m.openPreview()...)
+		}
+	case "r":
+		if !m.preview.Visible() {
+			m.loading = true
+			cmds = append(cmds, m.notification.ShowInfo("Please wait..."))
+			cmds = append(cmds, m.loadPRs())
+		}
+	case "a":
+		if m.preview.Visible() {
+			if pr := m.prlist.SelectedPR(); pr != nil {
+				cmds = append(cmds, m.approvePR(pr))
+			}
+		}
+	case "o":
+		if m.preview.Visible() {
+			if pr := m.prlist.SelectedPR(); pr != nil {
+				cmds = append(cmds, m.notification.Show("Opening on GitHub.com..."))
+				cmds = append(cmds, m.openOnWeb(pr))
+			}
+		}
+	case "ctrl+n":
+		if m.preview.Visible() {
+			m.preview.ScrollDown(1)
+		}
+	case "ctrl+p":
+		if m.preview.Visible() {
+			m.preview.ScrollUp(1)
+		}
+	}
+
+	return cmds
 }
 
 func (m Model) approvePR(pr *types.PR) tea.Cmd {
