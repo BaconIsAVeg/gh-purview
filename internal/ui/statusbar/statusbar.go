@@ -7,6 +7,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	ModeList = "list mode"
+	ModeDiff = "diff mode"
+)
+
 type KeyBinding struct {
 	Key  string
 	Desc string
@@ -23,7 +28,7 @@ type Model struct {
 
 func New(s *styles.Palette, version string) Model {
 	return Model{
-		mode:    "list mode",
+		mode:    ModeList,
 		styles:  s,
 		version: version,
 	}
@@ -44,7 +49,7 @@ func (m *Model) SetWidth(width int) {
 
 func (m Model) getKeybinds() []KeyBinding {
 	switch m.mode {
-	case "diff mode":
+	case ModeDiff:
 		return []KeyBinding{
 			{Key: "^n/^p", Desc: "scroll"},
 			{Key: "a", Desc: "approve"},
@@ -82,10 +87,10 @@ func (m Model) View() string {
 	middleWidth := max(m.width-leftWidth-rightWidth, 0)
 
 	var middleText string
-	if m.mode == "diff mode" && (m.additions > 0 || m.deletions > 0) {
+	if m.mode == ModeDiff && (m.additions > 0 || m.deletions > 0) {
 		middleText = fmt.Sprintf(" +%d -%d ", m.additions, m.deletions)
 	} else {
-		middleText = " " + m.version
+		middleText = " purview " + m.version
 	}
 	middleContent := lipgloss.NewStyle().
 		Background(barBg).

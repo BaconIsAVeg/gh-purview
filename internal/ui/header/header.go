@@ -36,7 +36,7 @@ func (m *Model) SetWidth(width int) {
 }
 
 func (m Model) View() string {
-	leftContent := m.styles.HeaderTitle.Render("purview")
+	leftContent := m.styles.HeaderTitle.Render("filter:")
 	rightContent := m.styles.HeaderText.Padding(0, 1).Render(fmt.Sprintf("%d/%d", m.count, m.totalCount))
 
 	leftWidth := lipgloss.Width(leftContent)

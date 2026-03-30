@@ -92,7 +92,7 @@ func (m *Model) openPreview() []tea.Cmd {
 	m.preview.SetVisible(true)
 	pr := m.prlist.SelectedPR()
 	m.preview.SetPR(pr)
-	m.statusbar.SetMode("diff mode")
+	m.statusbar.SetMode(statusbar.ModeDiff)
 	m.statusbar.SetStats(0, 0)
 	m.updateLayout()
 	return []tea.Cmd{
@@ -103,7 +103,7 @@ func (m *Model) openPreview() []tea.Cmd {
 
 func (m *Model) closePreview() {
 	m.preview.SetVisible(false)
-	m.statusbar.SetMode("list mode")
+	m.statusbar.SetMode(statusbar.ModeList)
 	m.statusbar.SetStats(0, 0)
 	m.updateLayout()
 }
