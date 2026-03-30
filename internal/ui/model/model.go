@@ -27,26 +27,24 @@ type Model struct {
 	notification notification.Model
 	styles       *styles.Palette
 	ghClient     *github.Client
-	version      string
 	width        int
 	height       int
 	ready        bool
 	loading      bool
 }
 
-func New(ghClient *github.Client, version string) Model {
+func New(ghClient *github.Client) Model {
 	s := styles.NewPalette()
 	notif := notification.New(s)
 	notif.Set("Please wait...", notification.TypeInfo)
 	return Model{
-		header:       header.New(s, version),
+		header:       header.New(s),
 		prlist:       prlist.New(s),
 		preview:      preview.New(s),
-		statusbar:    statusbar.New(s, version),
+		statusbar:    statusbar.New(s),
 		notification: notif,
 		styles:       s,
 		ghClient:     ghClient,
-		version:      version,
 		loading:      true,
 	}
 }

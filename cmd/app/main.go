@@ -11,23 +11,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var Version = "dev"
-
 var pageSize int
-var showVersion bool
 
 func init() {
 	flag.IntVar(&pageSize, "pageSize", 25, "Number of PRs to fetch per request")
-	flag.BoolVar(&showVersion, "version", false, "Show version and exit")
 }
 
 func main() {
 	flag.Parse()
-
-	if showVersion {
-		fmt.Println("gh-purview", Version)
-		os.Exit(0)
-	}
 
 	if err := debug.Init(); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: debug init failed: %v\n", err)
@@ -41,7 +32,7 @@ func main() {
 	}
 	defer ghClient.Close()
 
-	p := tea.NewProgram(model.New(ghClient, Version), tea.WithAltScreen())
+	p := tea.NewProgram(model.New(ghClient), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error: %v", err)
 		os.Exit(1)

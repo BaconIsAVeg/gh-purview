@@ -20,7 +20,7 @@ type Model struct {
 	editing    bool
 }
 
-func New(s *styles.Palette, version string) Model {
+func New(s *styles.Palette) Model {
 	ti := textinput.New()
 	ti.CharLimit = 500
 	ti.Prompt = ""

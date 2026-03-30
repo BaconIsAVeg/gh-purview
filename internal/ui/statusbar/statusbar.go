@@ -20,18 +20,16 @@ type KeyBinding struct {
 
 type Model struct {
 	mode      string
-	version   string
 	width     int
 	styles    *styles.Palette
 	additions int
 	deletions int
 }
 
-func New(s *styles.Palette, version string) Model {
+func New(s *styles.Palette) Model {
 	return Model{
-		mode:    ModeList,
-		styles:  s,
-		version: version,
+		mode:   ModeList,
+		styles: s,
 	}
 }
 
@@ -97,7 +95,7 @@ func (m Model) View() string {
 	if m.mode == ModeDiff && (m.additions > 0 || m.deletions > 0) {
 		middleText = fmt.Sprintf(" +%d -%d ", m.additions, m.deletions)
 	} else {
-		middleText = " purview " + m.version
+		middleText = ""
 	}
 	middleContent := lipgloss.NewStyle().
 		Background(barBg).
