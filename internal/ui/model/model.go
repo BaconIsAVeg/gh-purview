@@ -136,6 +136,8 @@ type diffLoadedMsg struct {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
+	wasEditing := m.header.IsEditing()
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		cmds = m.handleKey(msg)
@@ -173,6 +175,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.updateLayout()
 	}
 
+	if m.header.IsEditing() && wasEditing {
+		var cmd tea.Cmd
+		m.header, cmd = m.header.Update(msg)
+		cmds = append(cmds, cmd)
+	}
+
 	var cmd tea.Cmd
 	m.notification, cmd = m.notification.Update(msg)
 	cmds = append(cmds, cmd)
@@ -182,6 +190,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *Model) handleKey(msg tea.KeyMsg) []tea.Cmd {
 	var cmds []tea.Cmd
+
+	if m.header.IsEditing() {
+		switch msg.String() {
+		case "enter":
+			newFilter := m.header.StopEditing()
+			m.ghClient.SetQuery(newFilter)
+			m.header.SetFilter(m.ghClient.Query())
+			m.loading = true
+			cmds = append(cmds, m.notification.ShowInfo("Please wait..."))
+			cmds = append(cmds, m.loadPRs())
+			m.statusbar.SetMode(statusbar.ModeList)
+			return cmds
+		case "esc":
+			m.header.CancelEditing()
+			m.statusbar.SetMode(statusbar.ModeList)
+			return cmds
+		}
+		return cmds
+	}
 
 	switch msg.String() {
 	case "ctrl+c":
@@ -236,6 +263,12 @@ func (m *Model) handleKey(msg tea.KeyMsg) []tea.Cmd {
 	case "ctrl+p":
 		if m.preview.Visible() {
 			m.preview.ScrollUp(1)
+		}
+	case "f":
+		if !m.preview.Visible() {
+			currentFilter := m.ghClient.Query()
+			m.header.StartEditing(currentFilter)
+			m.statusbar.SetMode(statusbar.ModeFilterEdit)
 		}
 	}
 

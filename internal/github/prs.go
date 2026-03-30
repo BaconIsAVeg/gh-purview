@@ -17,7 +17,7 @@ func debugPrint(format string, args ...interface{}) {
 const prSearchQuery = "org:%s is:pr is:open -is:draft sort:updated-desc"
 
 func (c *Client) FetchPRs(ctx context.Context) ([]types.PR, int, error) {
-	query := fmt.Sprintf(prSearchQuery, c.org)
+	query := c.Query()
 	debugPrint("Query: %s", query)
 
 	perPage := c.pageSize

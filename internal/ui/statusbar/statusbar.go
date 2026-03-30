@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	ModeList = "list mode"
-	ModeDiff = "diff mode"
+	ModeList       = "L"
+	ModeDiff       = "D"
+	ModeFilterEdit = "F"
 )
 
 type KeyBinding struct {
@@ -56,10 +57,16 @@ func (m Model) getKeybinds() []KeyBinding {
 			{Key: "o", Desc: "open on web"},
 			{Key: "esc", Desc: "close"},
 		}
+	case ModeFilterEdit:
+		return []KeyBinding{
+			{Key: "enter", Desc: "apply"},
+			{Key: "esc", Desc: "cancel"},
+		}
 	default:
 		return []KeyBinding{
 			{Key: "j/k", Desc: "navigate"},
 			{Key: "p", Desc: "preview"},
+			{Key: "f", Desc: "filter"},
 			{Key: "r", Desc: "refresh"},
 			{Key: "q", Desc: "quit"},
 		}

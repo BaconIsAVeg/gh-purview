@@ -10,9 +10,10 @@ import (
 )
 
 type Client struct {
-	client   *github.Client
-	org      string
-	pageSize int
+	client      *github.Client
+	org         string
+	pageSize    int
+	customQuery string
 }
 
 func NewClient(org string, pageSize int) (*Client, error) {
@@ -89,5 +90,12 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 func (c *Client) Close() {}
 
 func (c *Client) Query() string {
+	if c.customQuery != "" {
+		return c.customQuery
+	}
 	return fmt.Sprintf(prSearchQuery, c.org)
+}
+
+func (c *Client) SetQuery(query string) {
+	c.customQuery = query
 }
