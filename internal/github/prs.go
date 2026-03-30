@@ -14,7 +14,7 @@ func debugPrint(format string, args ...interface{}) {
 	debug.Print(format, args...)
 }
 
-const prSearchQuery = "org:%s is:pr is:open -is:draft sort:updated-desc"
+const prSearchQuery = "is:pr is:open -is:draft review-requested:@me sort:updated-desc"
 
 func (c *Client) FetchPRs(ctx context.Context) ([]types.PR, int, error) {
 	query := c.Query()

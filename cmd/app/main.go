@@ -13,13 +13,11 @@ import (
 
 var Version = "dev"
 
-var org string
 var pageSize int
 var showVersion bool
 
 func init() {
-	flag.StringVar(&org, "org", "", "GitHub organization to fetch PRs from")
-	flag.IntVar(&pageSize, "pageSize", 10, "Number of PRs to fetch per request")
+	flag.IntVar(&pageSize, "pageSize", 25, "Number of PRs to fetch per request")
 	flag.BoolVar(&showVersion, "version", false, "Show version and exit")
 }
 
@@ -36,15 +34,7 @@ func main() {
 	}
 	defer debug.Close()
 
-	if org == "" {
-		org = os.Getenv("GH_ORG")
-	}
-	if org == "" {
-		fmt.Fprintln(os.Stderr, "Error: organization required. Use -org flag or GH_ORG env var")
-		os.Exit(1)
-	}
-
-	ghClient, err := github.NewClient(org, pageSize)
+	ghClient, err := github.NewClient(pageSize)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error initializing GitHub client: %v\n", err)
 		os.Exit(1)

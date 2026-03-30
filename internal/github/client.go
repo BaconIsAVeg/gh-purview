@@ -11,12 +11,11 @@ import (
 
 type Client struct {
 	client      *github.Client
-	org         string
 	pageSize    int
 	customQuery string
 }
 
-func NewClient(org string, pageSize int) (*Client, error) {
+func NewClient(pageSize int) (*Client, error) {
 	token, host, err := detectAuth()
 	if err != nil {
 		return nil, fmt.Errorf("failed to detect auth: %w", err)
@@ -40,11 +39,10 @@ func NewClient(org string, pageSize int) (*Client, error) {
 		}
 	}
 
-	debugPrint("Client created for org: %s, pageSize: %d", org, pageSize)
+	debugPrint("Client created, pageSize: %d", pageSize)
 
 	return &Client{
 		client:   client,
-		org:      org,
 		pageSize: pageSize,
 	}, nil
 }
@@ -93,7 +91,7 @@ func (c *Client) Query() string {
 	if c.customQuery != "" {
 		return c.customQuery
 	}
-	return fmt.Sprintf(prSearchQuery, c.org)
+	return prSearchQuery
 }
 
 func (c *Client) SetQuery(query string) {
