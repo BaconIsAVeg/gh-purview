@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/anomaly/ghr/internal/github"
 	"github.com/anomaly/ghr/internal/types"
 	"github.com/anomaly/ghr/internal/ui/styles"
 	"github.com/charmbracelet/bubbles/key"
@@ -151,8 +152,22 @@ func (m Model) renderLine1(pr types.PR, selected bool) string {
 func (m Model) renderLine2(pr types.PR, selected bool) string {
 	repo := m.styles.PRMeta.Render(pr.RepoPath())
 	author := m.styles.PRMeta.Render(pr.Author)
+	review := m.renderReviewDecision(pr.ReviewDecision)
 	status := m.renderStatus(pr.Status)
-	return lipgloss.JoinHorizontal(lipgloss.Left, "    ", repo, " ", author, " ", status)
+	return lipgloss.JoinHorizontal(lipgloss.Left, "    ", repo, " ", author, " ", status, review)
+}
+
+func (m Model) renderReviewDecision(decision string) string {
+	switch decision {
+	case string(github.ReviewApproved):
+		return m.styles.ReviewApproved.Render(" ✓")
+	case string(github.ReviewChangesRequested):
+		return m.styles.ReviewChanges.Render(" ✗")
+	case string(github.ReviewRequired):
+		return m.styles.ReviewRequired.Render(" ~")
+	default:
+		return ""
+	}
 }
 
 func (m Model) renderStatus(status types.PRStatus) string {

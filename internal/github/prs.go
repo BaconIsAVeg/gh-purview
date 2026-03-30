@@ -17,6 +17,13 @@ func debugPrint(format string, args ...interface{}) {
 const prSearchQuery = "is:pr is:open -is:draft review-requested:@me sort:updated-desc"
 
 func (c *Client) FetchPRs(ctx context.Context) ([]types.PR, int, error) {
+	if c.graphqlClient != nil {
+		return c.FetchPRsGraphQL(ctx)
+	}
+	return c.FetchPRsREST(ctx)
+}
+
+func (c *Client) FetchPRsREST(ctx context.Context) ([]types.PR, int, error) {
 	query := c.Query()
 	debugPrint("Query: %s", query)
 

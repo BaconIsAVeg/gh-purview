@@ -19,6 +19,9 @@ type Palette struct {
 	StatusOpen       lipgloss.Style
 	StatusClosed     lipgloss.Style
 	StatusMerged     lipgloss.Style
+	ReviewApproved   lipgloss.Style
+	ReviewChanges    lipgloss.Style
+	ReviewRequired   lipgloss.Style
 	Notification     lipgloss.Style
 	NotificationInfo lipgloss.Style
 	NotificationWarn lipgloss.Style
@@ -92,6 +95,15 @@ func NewPalette() *Palette {
 			Bold(true),
 		StatusMerged: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("4")).
+			Bold(true),
+		ReviewApproved: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("2")).
+			Bold(true),
+		ReviewChanges: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("1")).
+			Bold(true),
+		ReviewRequired: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("33")).
 			Bold(true),
 		Notification: lipgloss.NewStyle().
 			Background(notificationBg).

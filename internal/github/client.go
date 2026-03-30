@@ -10,9 +10,10 @@ import (
 )
 
 type Client struct {
-	client      *github.Client
-	pageSize    int
-	customQuery string
+	client        *github.Client
+	graphqlClient *api.GraphQLClient
+	pageSize      int
+	customQuery   string
 }
 
 func NewClient(pageSize int) (*Client, error) {
@@ -41,9 +42,34 @@ func NewClient(pageSize int) (*Client, error) {
 
 	debugPrint("Client created, pageSize: %d", pageSize)
 
+	var graphqlClient *api.GraphQLClient
+	var gqlErr error
+	if token != "" {
+		graphqlClient, gqlErr = api.NewGraphQLClient(api.ClientOptions{
+			AuthToken:    token,
+			LogIgnoreEnv: true,
+		})
+		debugPrint("GraphQL client created with explicit token")
+	} else if host == "github.com" {
+		graphqlClient, gqlErr = api.DefaultGraphQLClient()
+		debugPrint("GraphQL client using default auth")
+	} else {
+		graphqlClient, gqlErr = api.NewGraphQLClient(api.ClientOptions{
+			Host:         host,
+			LogIgnoreEnv: true,
+		})
+		debugPrint("GraphQL client for enterprise host: %s", host)
+	}
+	if gqlErr != nil {
+		debugPrint("GraphQL client init failed: %v, falling back to REST", gqlErr)
+	} else {
+		debugPrint("GraphQL client initialized successfully")
+	}
+
 	return &Client{
-		client:   client,
-		pageSize: pageSize,
+		client:        client,
+		graphqlClient: graphqlClient,
+		pageSize:      pageSize,
 	}, nil
 }
 
