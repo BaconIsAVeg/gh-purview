@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/anomaly/ghr/internal/debug"
-	"github.com/anomaly/ghr/internal/types"
+	"github.com/BaconIsAVeg/gh-purview/internal/debug"
+	"github.com/BaconIsAVeg/gh-purview/internal/types"
 	"github.com/google/go-github/v82/github"
 )
 

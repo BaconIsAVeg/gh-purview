@@ -3,7 +3,7 @@ package statusbar
 import (
 	"fmt"
 
-	"github.com/anomaly/ghr/internal/ui/styles"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -51,7 +51,7 @@ func (m Model) getKeybinds() []KeyBinding {
 	case ModeDiff:
 		return []KeyBinding{
 			{Key: "^n/^p", Desc: "scroll"},
-			{Key: "a", Desc: "approve"},
+			{Key: "^a", Desc: "approve"},
 			{Key: "o", Desc: "open on web"},
 			{Key: "esc", Desc: "close"},
 		}

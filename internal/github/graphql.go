@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/anomaly/ghr/internal/types"
+	"github.com/BaconIsAVeg/gh-purview/internal/types"
 )
 
 type ReviewDecision string

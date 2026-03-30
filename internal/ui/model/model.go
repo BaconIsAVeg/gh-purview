@@ -4,16 +4,17 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
-	"github.com/anomaly/ghr/internal/github"
-	"github.com/anomaly/ghr/internal/types"
-	"github.com/anomaly/ghr/internal/ui/header"
-	"github.com/anomaly/ghr/internal/ui/helpers"
-	"github.com/anomaly/ghr/internal/ui/notification"
-	"github.com/anomaly/ghr/internal/ui/preview"
-	"github.com/anomaly/ghr/internal/ui/prlist"
-	"github.com/anomaly/ghr/internal/ui/statusbar"
-	"github.com/anomaly/ghr/internal/ui/styles"
+	"github.com/BaconIsAVeg/gh-purview/internal/github"
+	"github.com/BaconIsAVeg/gh-purview/internal/types"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/header"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/helpers"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/notification"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/preview"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/prlist"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/statusbar"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/pkg/browser"
@@ -165,10 +166,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.statusbar.SetStats(msg.additions, msg.deletions)
 		}
 	case approvePRMsg:
-		if msg.pr != nil {
-			cmds = append(cmds, m.notification.Show(fmt.Sprintf("PR #%d approved", msg.pr.Number)))
-			m.updateLayout()
+		if msg.err != nil {
+			cmds = append(cmds, m.notification.ShowWithTimeout(fmt.Sprintf("Error: %v", msg.err), notification.TypeWarning, 2*time.Second))
+		} else if msg.pr != nil {
+			cmds = append(cmds, m.notification.ShowWithTimeout(fmt.Sprintf("PR #%d approved", msg.pr.Number), notification.TypeSuccess, 2*time.Second))
 		}
+		m.updateLayout()
 	case notification.HideMsg:
 		m.updateLayout()
 	}
@@ -241,9 +244,10 @@ func (m *Model) handleKey(msg tea.KeyMsg) []tea.Cmd {
 			cmds = append(cmds, m.notification.ShowInfo("Please wait..."))
 			cmds = append(cmds, m.loadPRs())
 		}
-	case "a":
+	case "ctrl+a":
 		if m.preview.Visible() {
 			if pr := m.prlist.SelectedPR(); pr != nil {
+				cmds = append(cmds, m.notification.ShowInfo("Approving PR..."))
 				cmds = append(cmds, m.approvePR(pr))
 			}
 		}
@@ -275,7 +279,8 @@ func (m *Model) handleKey(msg tea.KeyMsg) []tea.Cmd {
 
 func (m Model) approvePR(pr *types.PR) tea.Cmd {
 	return func() tea.Msg {
-		return approvePRMsg{pr: pr}
+		err := m.ghClient.ApprovePR(context.Background(), pr)
+		return approvePRMsg{pr: pr, err: err}
 	}
 }
 
@@ -291,7 +296,8 @@ func (m Model) openOnWeb(pr *types.PR) tea.Cmd {
 }
 
 type approvePRMsg struct {
-	pr *types.PR
+	pr  *types.PR
+	err error
 }
 
 func (m *Model) updateLayout() {

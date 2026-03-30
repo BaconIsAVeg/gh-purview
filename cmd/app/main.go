@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/anomaly/ghr/internal/debug"
-	"github.com/anomaly/ghr/internal/github"
-	"github.com/anomaly/ghr/internal/ui/model"
+	"github.com/BaconIsAVeg/gh-purview/internal/debug"
+	"github.com/BaconIsAVeg/gh-purview/internal/github"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/model"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

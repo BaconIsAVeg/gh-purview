@@ -3,8 +3,8 @@ package preview
 import (
 	"strings"
 
-	"github.com/anomaly/ghr/internal/types"
-	"github.com/anomaly/ghr/internal/ui/styles"
+	"github.com/BaconIsAVeg/gh-purview/internal/types"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )

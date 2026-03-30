@@ -1,4 +1,4 @@
-module github.com/anomaly/ghr
+module github.com/BaconIsAVeg/gh-purview
 
 go 1.25.0
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/anomaly/ghr/internal/types"
+	"github.com/BaconIsAVeg/gh-purview/internal/types"
 	"github.com/google/go-github/v82/github"
 )
 

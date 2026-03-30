@@ -3,7 +3,7 @@ package notification
 import (
 	"time"
 
-	"github.com/anomaly/ghr/internal/ui/styles"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -53,6 +53,16 @@ func (m *Model) ShowWithType(message string, notifType Type) tea.Cmd {
 	m.visible = true
 	m.startTime = time.Now()
 	return tea.Tick(m.duration, func(time.Time) tea.Msg {
+		return HideMsg{}
+	})
+}
+
+func (m *Model) ShowWithTimeout(message string, notifType Type, timeout time.Duration) tea.Cmd {
+	m.message = message
+	m.notifType = notifType
+	m.visible = true
+	m.startTime = time.Now()
+	return tea.Tick(timeout, func(time.Time) tea.Msg {
 		return HideMsg{}
 	})
 }

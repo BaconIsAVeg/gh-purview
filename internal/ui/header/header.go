@@ -7,7 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/anomaly/ghr/internal/ui/styles"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
 )
 
 type Model struct {
