@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/cli/go-gh/v2/pkg/api"
+	"github.com/cli/go-gh/v2/pkg/auth"
 	"github.com/google/go-github/v82/github"
 )
 
@@ -80,16 +81,15 @@ func detectAuth() (token, host string, err error) {
 	debugPrint("Token from env: found=%v", token != "")
 
 	if host = os.Getenv("GH_HOST"); host == "" {
-		host = "github.com"
+		host, _ = auth.DefaultHost()
 	}
 
 	if token == "" {
-		restClient, err := api.DefaultRESTClient()
-		if err != nil {
-			return "", "", fmt.Errorf("no token found and gh auth unavailable: %w", err)
+		token, _ = auth.TokenForHost(host)
+		if token == "" {
+			return "", "", fmt.Errorf("no authentication token found")
 		}
-		_ = restClient
-		debugPrint("Using gh auth fallback")
+		debugPrint("Using gh auth token for host: %s", host)
 	}
 
 	return token, host, nil
