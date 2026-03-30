@@ -37,5 +37,4 @@ Thumbs.db
 
 # Debug
 *.log
-debug
 __debug_bin*
