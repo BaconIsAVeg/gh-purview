@@ -8,19 +8,24 @@ import (
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	// linesPerPR is the number of lines each PR item occupies in the list
+	linesPerPR = 2
+	// titlePadding is the character width reserved for cursor, number, and spacing
+	titlePadding = 14
+)
+
 type Model struct {
-	prs      []types.PR
-	cursor   int
-	offset   int
-	width    int
-	height   int
-	styles   *styles.Palette
-	viewport viewport.Model
+	prs    []types.PR
+	cursor int
+	offset int
+	width  int
+	height int
+	styles *styles.Palette
 }
 
 type KeyMap struct {
@@ -43,8 +48,7 @@ func DefaultKeyMap() KeyMap {
 
 func New(s *styles.Palette) Model {
 	return Model{
-		styles:   s,
-		viewport: viewport.New(0, 0),
+		styles: s,
 	}
 }
 
@@ -54,24 +58,34 @@ func (m *Model) SetPRs(prs []types.PR) {
 
 func (m *Model) SetWidth(width int) {
 	m.width = width
-	m.viewport.Width = width
 }
 
 func (m *Model) SetHeight(height int) {
 	m.height = height
-	m.viewport.Height = height
+}
+
+// visiblePRCount returns the number of PRs that can fit in the current height.
+// Each PR occupies linesPerPR lines.
+func (m *Model) visiblePRCount() int {
+	count := m.height / linesPerPR
+	if count < 1 {
+		return 1
+	}
+	return count
+}
+
+// clampOffset ensures the offset stays within valid bounds for cursor visibility.
+func (m *Model) clampOffset() {
+	visible := m.visiblePRCount()
+	if m.cursor < m.offset {
+		m.offset = m.cursor
+	} else if m.cursor >= m.offset+visible {
+		m.offset = m.cursor - visible + 1
+	}
 }
 
 func (m *Model) EnsureCursorVisible() {
-	visibleItems := m.height / 2
-	if visibleItems < 1 {
-		visibleItems = 1
-	}
-	if m.cursor < m.offset {
-		m.offset = m.cursor
-	} else if m.cursor >= m.offset+visibleItems {
-		m.offset = m.cursor - visibleItems + 1
-	}
+	m.clampOffset()
 }
 
 func (m *Model) SelectedPR() *types.PR {
@@ -84,77 +98,78 @@ func (m *Model) SelectedPR() *types.PR {
 func (m *Model) CursorUp() {
 	if m.cursor > 0 {
 		m.cursor--
-		if m.cursor < m.offset {
-			m.offset = m.cursor
-		}
+		m.clampOffset()
 	}
 }
 
 func (m *Model) CursorDown() {
 	if m.cursor < len(m.prs)-1 {
 		m.cursor++
-		visibleItems := m.height / 2
-		if m.cursor >= m.offset+visibleItems {
-			m.offset = m.cursor - visibleItems + 1
-		}
+		m.clampOffset()
 	}
 }
 
 func (m Model) View() string {
 	if len(m.prs) == 0 {
-		var b strings.Builder
-		b.WriteString(m.styles.PRMeta.Render(""))
-		for i := 1; i < m.height; i++ {
-			b.WriteString("\n")
-		}
-		return b.String()
+		return m.renderEmptyState()
 	}
 
 	var b strings.Builder
-	visibleItems := m.height / 2
-	if visibleItems < 1 {
-		visibleItems = 1
-	}
+	visibleCount := m.visiblePRCount()
+	endIndex := min(m.offset+visibleCount, len(m.prs))
 
-	itemCount := 0
-	for i := m.offset; i < len(m.prs) && i < m.offset+visibleItems; i++ {
+	for i := m.offset; i < endIndex; i++ {
 		pr := m.prs[i]
-		isSelected := i == m.cursor
+		selected := i == m.cursor
 
-		line1 := m.renderLine1(pr, isSelected)
-		line2 := m.renderLine2(pr, isSelected)
+		b.WriteString(m.renderLine1(pr, selected))
+		b.WriteByte('\n')
+		b.WriteString(m.renderLine2(pr, selected))
 
-		b.WriteString(line1 + "\n" + line2)
-		itemCount++
-		if i < len(m.prs)-1 && i < m.offset+visibleItems-1 {
-			b.WriteString("\n")
+		if i < endIndex-1 {
+			b.WriteByte('\n')
 		}
 	}
 
-	linesRendered := itemCount * 2
+	// Pad remaining lines to fill height
+	linesRendered := (endIndex - m.offset) * linesPerPR
 	for i := linesRendered; i < m.height; i++ {
-		b.WriteString("\n")
+		b.WriteByte('\n')
 	}
 
+	return b.String()
+}
+
+// renderEmptyState renders the list when there are no PRs to display.
+func (m Model) renderEmptyState() string {
+	var b strings.Builder
+	b.WriteString(m.styles.PRMeta.Render(""))
+	for i := 1; i < m.height; i++ {
+		b.WriteByte('\n')
+	}
 	return b.String()
 }
 
 func (m Model) renderLine1(pr types.PR, selected bool) string {
 	cursor := "  "
 	if selected {
-		cursor = m.styles.PRNumber.Render(" ▶")
+		cursor = m.styles.PRNumber.Render(" ┌")
 	}
 	num := m.styles.PRNumber.Render(fmt.Sprintf("#%d", pr.Number))
-	title := m.styles.PRTitle.Render(truncate(pr.Title, m.width-14))
+	title := m.styles.PRTitle.Render(truncate(pr.Title, m.width-titlePadding))
 	return lipgloss.JoinHorizontal(lipgloss.Left, cursor, " ", num, " ", title)
 }
 
 func (m Model) renderLine2(pr types.PR, selected bool) string {
+	cursor := "   "
+	if selected {
+		cursor = m.styles.PRNumber.Render(" └ ")
+	}
 	repo := m.styles.PRMeta.Render(pr.RepoPath())
 	author := m.styles.PRMeta.Render(pr.Author)
 	review := m.renderReviewDecision(pr.ReviewDecision)
 	status := m.renderStatus(pr.Status)
-	return lipgloss.JoinHorizontal(lipgloss.Left, "    ", repo, " ", author, " ", status, review)
+	return lipgloss.JoinHorizontal(lipgloss.Left, cursor, repo, " ", author, " ", status, review)
 }
 
 func (m Model) renderReviewDecision(decision string) string {
