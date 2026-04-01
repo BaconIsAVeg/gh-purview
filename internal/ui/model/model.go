@@ -37,7 +37,8 @@ type Model struct {
 }
 
 func New(ghClient *github.Client) Model {
-	s := styles.NewPalette()
+	hasDarkBg := lipgloss.HasDarkBackground()
+	s := styles.NewPalette(hasDarkBg)
 	notif := notification.New(s)
 	notif.Set("Please wait...", notification.TypeInfo)
 	return Model{
