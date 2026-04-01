@@ -37,7 +37,6 @@ func NewPalette() *Palette {
 	primaryBg := lipgloss.Color("97")
 	secondaryBg := lipgloss.Color("234")
 	primaryFg := lipgloss.Color("15")
-	normalFg := lipgloss.Color("252")
 	dimFg := lipgloss.Color("244")
 	popFg := lipgloss.Color("178")
 	notificationBg := lipgloss.Color("28")
@@ -61,7 +60,7 @@ func NewPalette() *Palette {
 			Foreground(primaryFg),
 		StatusBar: lipgloss.NewStyle().
 			Background(secondaryBg).
-			Foreground(normalFg).
+			Foreground(primaryFg).
 			Padding(0, 1),
 		StatusMode: lipgloss.NewStyle().
 			Background(primaryBg).
@@ -81,7 +80,7 @@ func NewPalette() *Palette {
 			Foreground(popFg).
 			Bold(true),
 		PRTitle: lipgloss.NewStyle().
-			Foreground(normalFg),
+			Foreground(primaryFg),
 		PRMeta: lipgloss.NewStyle().
 			Foreground(dimFg),
 		PreviewBorder: lipgloss.NewStyle().
@@ -89,7 +88,7 @@ func NewPalette() *Palette {
 			BorderForeground(dimFg).
 			BorderBottom(false),
 		PreviewContent: lipgloss.NewStyle().
-			Foreground(normalFg),
+			Foreground(primaryFg),
 		StatusOpen: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("2")).
 			Bold(true),
