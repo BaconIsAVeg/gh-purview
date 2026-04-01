@@ -34,6 +34,11 @@ Then run:
 gh-purview
 ```
 
+## Environment Variables
+
+- `GH_TOKEN` or `GITHUB_TOKEN` - GitHub authentication token
+- `GH_MDCA` - When set, transforms GitHub URLs to support Microsoft Defender for Cloud Applications (e.g., `github.com` becomes `github.com.mcas.ms`)
+
 ## Features
 
 - **Browse PRs** - View all pull requests where you're requested as a reviewer

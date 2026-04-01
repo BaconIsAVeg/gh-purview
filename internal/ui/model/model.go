@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/BaconIsAVeg/gh-purview/internal/github"
@@ -284,12 +286,19 @@ func (m Model) approvePR(pr *types.PR) tea.Cmd {
 	}
 }
 
+func transformURLForMDCA(url string) string {
+	if os.Getenv("GH_MDCA") == "" {
+		return url
+	}
+	return strings.Replace(url, "github.com", "github.com.mcas.ms", 1)
+}
+
 func (m Model) openOnWeb(pr *types.PR) tea.Cmd {
 	return func() tea.Msg {
 		if pr != nil && pr.URL != "" {
 			browser.Stdout = io.Discard
 			browser.Stderr = io.Discard
-			browser.OpenURL(pr.URL)
+			browser.OpenURL(transformURLForMDCA(pr.URL))
 		}
 		return nil
 	}
