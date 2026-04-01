@@ -24,7 +24,7 @@ func getLines(s string) (lines []string, widest int) {
 	return lines, widest
 }
 
-func PlaceOverlay(x, y int, fg, bg string, shadow bool, opts ...WhitespaceOption) string {
+func PlaceOverlay(x, y int, fg, bg string, shadow bool, shadowColor lipgloss.Color, opts ...WhitespaceOption) string {
 	fgLines, fgWidth := getLines(fg)
 	bgLines, bgWidth := getLines(bg)
 	bgHeight := len(bgLines)
@@ -33,7 +33,7 @@ func PlaceOverlay(x, y int, fg, bg string, shadow bool, opts ...WhitespaceOption
 	if shadow {
 		var shadowbg string = ""
 		shadowchar := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#333333")).
+			Foreground(shadowColor).
 			Render("░")
 		for i := 0; i <= fgHeight; i++ {
 			if i == 0 {
@@ -43,7 +43,7 @@ func PlaceOverlay(x, y int, fg, bg string, shadow bool, opts ...WhitespaceOption
 			}
 		}
 
-		fg = PlaceOverlay(0, 0, fg, shadowbg, false, opts...)
+		fg = PlaceOverlay(0, 0, fg, shadowbg, false, shadowColor, opts...)
 		fgLines, fgWidth = getLines(fg)
 		fgHeight = len(fgLines)
 	}

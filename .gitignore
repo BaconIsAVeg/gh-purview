@@ -38,3 +38,4 @@ Thumbs.db
 # Debug
 *.log
 __debug_bin*
+.todos/

@@ -29,6 +29,8 @@ type Palette struct {
 	DiffDelete       lipgloss.Style
 	DiffHeader       lipgloss.Style
 	DiffFileHeader   lipgloss.Style
+	SecondaryBg      lipgloss.Color
+	ShadowFg         lipgloss.Color
 }
 
 func NewPalette() *Palette {
@@ -42,6 +44,7 @@ func NewPalette() *Palette {
 	notificationFg := lipgloss.Color("15")
 	infoBg := lipgloss.Color("25")
 	warnBg := lipgloss.Color("124")
+	shadowFg := lipgloss.Color("#333333")
 
 	return &Palette{
 		Header: lipgloss.NewStyle().
@@ -130,5 +133,7 @@ func NewPalette() *Palette {
 		DiffFileHeader: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("15")).
 			Bold(true),
+		SecondaryBg: secondaryBg,
+		ShadowFg:    shadowFg,
 	}
 }

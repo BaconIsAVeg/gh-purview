@@ -72,7 +72,7 @@ func (m Model) getKeybinds() []KeyBinding {
 }
 
 func (m Model) View() string {
-	barBg := lipgloss.Color("234")
+	barBg := m.styles.SecondaryBg
 
 	modeContent := m.styles.StatusMode.Render(m.mode)
 

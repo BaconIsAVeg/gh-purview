@@ -362,7 +362,7 @@ func (m Model) View() string {
 		notifWidth := lipgloss.Width(notifView)
 		x := m.width - notifWidth - 1
 		y := m.height - 2
-		return helpers.PlaceOverlay(x, y, notifView, base, false)
+		return helpers.PlaceOverlay(x, y, notifView, base, false, m.styles.ShadowFg)
 	}
 
 	return base
