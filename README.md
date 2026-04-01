@@ -1,6 +1,8 @@
 # gh-purview
 
-A terminal UI for browsing and managing your GitHub pull requests.
+A terminal UI for browsing and approving GitHub pull requests.
+
+This isn't designed to be a complete review tool, I created it specifically to address handling dozens of tiny dependency updates across the 240+ repositories in our organization without wanting to open each of them up in GitHub's declining web interface.
 
 ## Installation
 
@@ -14,6 +16,12 @@ Then run with:
 
 ```bash
 gh purview
+```
+
+To update to the latest release:
+
+```bash
+gh extension upgrade BaconIsAVeg/gh-purview
 ```
 
 ### Standalone
@@ -46,6 +54,7 @@ gh-purview
 - **Preview diffs** - View the diff for any PR directly in the terminal
 - **Approve PRs** - Approve pull requests with a single keypress
 - **Open on GitHub** - Quickly open any PR in your browser
+- **Theme detection** - Automatically adapts colors to light or dark terminal backgrounds
 
 ## Filter Syntax
 
