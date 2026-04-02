@@ -3,6 +3,9 @@ name: release
 on:
   push:
     branches: [main]
+    paths:
+      - '**.go'
+      - 'go.mod'
 
 permissions:
   contents: write
