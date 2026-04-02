@@ -107,6 +107,7 @@ func (m *Model) closePreview() {
 	m.preview.SetVisible(false)
 	m.statusbar.SetMode(statusbar.ModeList)
 	m.statusbar.SetStats(0, 0)
+	m.statusbar.SetScrollPosition("")
 	m.updateLayout()
 }
 
@@ -164,9 +165,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.err != nil {
 			m.preview.SetDiffContent(fmt.Sprintf("Error loading diff: %v", msg.err))
 			m.statusbar.SetStats(0, 0)
+			m.statusbar.SetScrollPosition("")
 		} else {
 			m.preview.SetDiffContent(msg.content)
 			m.statusbar.SetStats(msg.additions, msg.deletions)
+			m.statusbar.SetScrollPosition(m.preview.ScrollPosition())
 		}
 	case approvePRMsg:
 		if msg.err != nil {
@@ -264,10 +267,22 @@ func (m *Model) handleKey(msg tea.KeyMsg) []tea.Cmd {
 	case "ctrl+n":
 		if m.preview.Visible() {
 			m.preview.ScrollDown(1)
+			m.statusbar.SetScrollPosition(m.preview.ScrollPosition())
 		}
 	case "ctrl+p":
 		if m.preview.Visible() {
 			m.preview.ScrollUp(1)
+			m.statusbar.SetScrollPosition(m.preview.ScrollPosition())
+		}
+	case "g":
+		if m.preview.Visible() {
+			m.preview.ScrollToTop()
+			m.statusbar.SetScrollPosition(m.preview.ScrollPosition())
+		}
+	case "G":
+		if m.preview.Visible() {
+			m.preview.ScrollToBottom()
+			m.statusbar.SetScrollPosition(m.preview.ScrollPosition())
 		}
 	case "f":
 		if !m.preview.Visible() {

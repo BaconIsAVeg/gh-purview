@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - '**.go'
-      - 'go.mod'
+      - "**.go"
+      - "go.mod"
 
 permissions:
   contents: write
@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: '0'
+          fetch-depth: "0"
 
       - name: Bump version and push tag
         id: tag

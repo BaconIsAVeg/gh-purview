@@ -19,11 +19,12 @@ type KeyBinding struct {
 }
 
 type Model struct {
-	mode      string
-	width     int
-	styles    *styles.Palette
-	additions int
-	deletions int
+	mode           string
+	width          int
+	styles         *styles.Palette
+	additions      int
+	deletions      int
+	scrollPosition string
 }
 
 func New(s *styles.Palette) Model {
@@ -42,6 +43,10 @@ func (m *Model) SetStats(additions, deletions int) {
 	m.deletions = deletions
 }
 
+func (m *Model) SetScrollPosition(pos string) {
+	m.scrollPosition = pos
+}
+
 func (m *Model) SetWidth(width int) {
 	m.width = width
 }
@@ -51,6 +56,7 @@ func (m Model) getKeybinds() []KeyBinding {
 	case ModeDiff:
 		return []KeyBinding{
 			{Key: "^n/^p", Desc: "scroll"},
+			{Key: "g/G", Desc: "top/bot"},
 			{Key: "^a", Desc: "approve"},
 			{Key: "o", Desc: "open on web"},
 			{Key: "esc", Desc: "close"},
@@ -94,6 +100,9 @@ func (m Model) View() string {
 	var middleText string
 	if m.mode == ModeDiff && (m.additions > 0 || m.deletions > 0) {
 		middleText = fmt.Sprintf(" +%d -%d ", m.additions, m.deletions)
+		if m.scrollPosition != "" {
+			middleText += fmt.Sprintf("[%s] ", m.scrollPosition)
+		}
 	} else {
 		middleText = ""
 	}

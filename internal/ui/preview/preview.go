@@ -1,6 +1,7 @@
 package preview
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
@@ -91,6 +92,23 @@ func (m *Model) ScrollUp(lines int) {
 
 func (m *Model) ScrollDown(lines int) {
 	m.viewport.ScrollDown(lines)
+}
+
+func (m *Model) ScrollToTop() {
+	m.viewport.GotoTop()
+}
+
+func (m *Model) ScrollToBottom() {
+	m.viewport.GotoBottom()
+}
+
+func (m Model) ScrollPosition() string {
+	totalLines := m.viewport.TotalLineCount()
+	if totalLines <= m.viewport.Height {
+		return ""
+	}
+	percent := float64(m.viewport.YOffset) / float64(totalLines-m.viewport.Height) * 100
+	return fmt.Sprintf("%.0f%%", percent)
 }
 
 func (m *Model) colorizeDiff(content string) string {
