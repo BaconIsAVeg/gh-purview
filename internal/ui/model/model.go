@@ -10,13 +10,14 @@ import (
 
 	"github.com/BaconIsAVeg/gh-purview/internal/github"
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
-	"github.com/BaconIsAVeg/gh-purview/internal/ui/header"
-	"github.com/BaconIsAVeg/gh-purview/internal/ui/helpers"
-	"github.com/BaconIsAVeg/gh-purview/internal/ui/notification"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/preview"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/prlist"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/statusbar"
-	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
+	"github.com/BaconIsAVeg/github-tuis/ui/diffstyles"
+	"github.com/BaconIsAVeg/github-tuis/ui/header"
+	"github.com/BaconIsAVeg/github-tuis/ui/helpers"
+	"github.com/BaconIsAVeg/github-tuis/ui/notification"
+	"github.com/BaconIsAVeg/github-tuis/ui/styles"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/pkg/browser"
@@ -39,13 +40,18 @@ type Model struct {
 func New(ghClient *github.Client) Model {
 	hasDarkBg := lipgloss.HasDarkBackground()
 	s := styles.NewPalette(hasDarkBg)
+	ds := diffstyles.NewDiffPalette(hasDarkBg)
+	h := header.New(s)
+	h.SetLeft("filter")
+	sb := statusbar.New(s)
+	sb.SetMode(statusbar.ModeList)
 	notif := notification.New(s)
 	notif.Set("Please wait...", notification.TypeInfo)
 	return Model{
-		header:       header.New(s),
+		header:       h,
 		prlist:       prlist.New(s),
-		preview:      preview.New(s),
-		statusbar:    statusbar.New(s),
+		preview:      preview.New(s, ds),
+		statusbar:    sb,
 		notification: notif,
 		styles:       s,
 		ghClient:     ghClient,
@@ -152,12 +158,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case prsLoadedMsg:
 		m.loading = false
 		m.notification.Hide()
-		m.header.SetFilter(msg.filter)
+		m.header.SetMiddle(msg.filter)
 		if msg.err != nil {
 			cmds = append(cmds, m.notification.ShowWarning(fmt.Sprintf("Error: %v", msg.err)))
 		} else {
 			m.prlist.SetPRs(msg.prs)
-			m.header.SetCount(len(msg.prs), msg.total)
+			m.header.SetRight(fmt.Sprintf("%d/%d", len(msg.prs), msg.total))
+			m.statusbar.SetMode(statusbar.ModeList)
 		}
 		m.updateLayout()
 	case diffLoadedMsg:
@@ -203,7 +210,7 @@ func (m *Model) handleKey(msg tea.KeyMsg) []tea.Cmd {
 		case "enter":
 			newFilter := m.header.StopEditing()
 			m.ghClient.SetQuery(newFilter)
-			m.header.SetFilter(m.ghClient.Query())
+			m.header.SetMiddle(m.ghClient.Query())
 			m.loading = true
 			cmds = append(cmds, m.notification.ShowInfo("Please wait..."))
 			cmds = append(cmds, m.loadPRs())

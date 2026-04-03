@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/BaconIsAVeg/gh-purview/internal/debug"
 	"github.com/BaconIsAVeg/gh-purview/internal/github"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/model"
+	"github.com/BaconIsAVeg/github-tuis/debug"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

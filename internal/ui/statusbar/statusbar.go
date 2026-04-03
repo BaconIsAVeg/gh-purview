@@ -3,8 +3,8 @@ package statusbar
 import (
 	"fmt"
 
-	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/BaconIsAVeg/github-tuis/ui/statusbar"
+	"github.com/BaconIsAVeg/github-tuis/ui/styles"
 )
 
 const (
@@ -13,15 +13,8 @@ const (
 	ModeFilterEdit = "F"
 )
 
-type KeyBinding struct {
-	Key  string
-	Desc string
-}
-
 type Model struct {
-	mode           string
-	width          int
-	styles         *styles.Palette
+	inner          statusbar.Model
 	additions      int
 	deletions      int
 	scrollPosition string
@@ -29,93 +22,69 @@ type Model struct {
 
 func New(s *styles.Palette) Model {
 	return Model{
-		mode:   ModeList,
-		styles: s,
+		inner: statusbar.New(s),
 	}
 }
 
 func (m *Model) SetMode(mode string) {
-	m.mode = mode
+	m.inner.SetMode(mode)
+	m.updateKeybinds(mode)
 }
 
 func (m *Model) SetStats(additions, deletions int) {
 	m.additions = additions
 	m.deletions = deletions
+	m.updateMiddleContent()
 }
 
 func (m *Model) SetScrollPosition(pos string) {
 	m.scrollPosition = pos
+	m.updateMiddleContent()
 }
 
 func (m *Model) SetWidth(width int) {
-	m.width = width
+	m.inner.SetWidth(width)
 }
 
-func (m Model) getKeybinds() []KeyBinding {
-	switch m.mode {
+func (m *Model) updateKeybinds(mode string) {
+	switch mode {
 	case ModeDiff:
-		return []KeyBinding{
+		m.inner.SetKeybindings([]statusbar.KeyBinding{
 			{Key: "^n/^p", Desc: "scroll"},
 			{Key: "g/G", Desc: "top/bot"},
 			{Key: "^a", Desc: "approve"},
 			{Key: "o", Desc: "open on web"},
 			{Key: "esc", Desc: "close"},
-		}
+		})
 	case ModeFilterEdit:
-		return []KeyBinding{
+		m.inner.SetKeybindings([]statusbar.KeyBinding{
 			{Key: "enter", Desc: "apply"},
 			{Key: "esc", Desc: "cancel"},
-		}
+		})
 	default:
-		return []KeyBinding{
+		m.inner.SetKeybindings([]statusbar.KeyBinding{
 			{Key: "j/k", Desc: "navigate"},
 			{Key: "p", Desc: "preview"},
 			{Key: "f", Desc: "filter"},
 			{Key: "r", Desc: "refresh"},
 			{Key: "q", Desc: "quit"},
+		})
+	}
+}
+
+func (m *Model) updateMiddleContent() {
+	mode := m.inner.Mode()
+	if mode == ModeDiff && (m.additions > 0 || m.deletions > 0) {
+		text := fmt.Sprintf(" +%d -%d ", m.additions, m.deletions)
+		if m.scrollPosition != "" {
+			text += fmt.Sprintf("[%s] ", m.scrollPosition)
 		}
+		m.inner.SetMiddleContent(text)
+	} else {
+		m.inner.SetMiddleContent("")
 	}
 }
 
 func (m Model) View() string {
-	barBg := m.styles.SecondaryBg
-
-	modeContent := m.styles.StatusMode.Render(m.mode)
-
-	keys := m.getKeybinds()
-	keysText := ""
-	for i, k := range keys {
-		if i > 0 {
-			keysText += m.styles.StatusSep.Render("  ")
-		}
-		keysText += m.styles.StatusKey.Render(k.Key) + m.styles.StatusDesc.Render(" "+k.Desc)
-	}
-
-	keysContent := m.styles.StatusBar.Render(keysText)
-
-	leftWidth := lipgloss.Width(modeContent)
-	rightWidth := lipgloss.Width(keysContent)
-	middleWidth := max(m.width-leftWidth-rightWidth, 0)
-
-	var middleText string
-	if m.mode == ModeDiff && (m.additions > 0 || m.deletions > 0) {
-		middleText = fmt.Sprintf(" +%d -%d ", m.additions, m.deletions)
-		if m.scrollPosition != "" {
-			middleText += fmt.Sprintf("[%s] ", m.scrollPosition)
-		}
-	} else {
-		middleText = ""
-	}
-	middleContent := lipgloss.NewStyle().
-		Background(barBg).
-		Width(middleWidth).
-		Render(middleText)
-
-	statusBar := lipgloss.JoinHorizontal(lipgloss.Top, modeContent, middleContent, keysContent)
-
-	if lipgloss.Width(statusBar) < m.width {
-		statusBar = lipgloss.NewStyle().Width(m.width).Background(barBg).Render(statusBar)
-	}
-
-	return statusBar
+	return m.inner.View()
 }

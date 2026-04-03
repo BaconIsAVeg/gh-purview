@@ -23,7 +23,7 @@ func (c *Client) FetchPRDiff(ctx context.Context, pr *types.PR) (*DiffResult, er
 		return nil, fmt.Errorf("PR is nil")
 	}
 
-	prDetail, _, err := c.client.PullRequests.Get(ctx, pr.Org, pr.Repo, pr.Number)
+	prDetail, _, err := c.REST().PullRequests.Get(ctx, pr.Org, pr.Repo, pr.Number)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get PR details: %w", err)
 	}
@@ -35,7 +35,7 @@ func (c *Client) FetchPRDiff(ctx context.Context, pr *types.PR) (*DiffResult, er
 	}
 
 	if result.ChangedFiles > 100 {
-		files, _, err := c.client.PullRequests.ListFiles(ctx, pr.Org, pr.Repo, pr.Number, &github.ListOptions{PerPage: 100})
+		files, _, err := c.REST().PullRequests.ListFiles(ctx, pr.Org, pr.Repo, pr.Number, &github.ListOptions{PerPage: 100})
 		if err != nil {
 			return nil, fmt.Errorf("failed to list PR files: %w", err)
 		}
@@ -44,7 +44,7 @@ func (c *Client) FetchPRDiff(ctx context.Context, pr *types.PR) (*DiffResult, er
 		return result, nil
 	}
 
-	diff, _, err := c.client.PullRequests.GetRaw(ctx, pr.Org, pr.Repo, pr.Number, github.RawOptions{Type: github.Diff})
+	diff, _, err := c.REST().PullRequests.GetRaw(ctx, pr.Org, pr.Repo, pr.Number, github.RawOptions{Type: github.Diff})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get PR diff: %w", err)
 	}

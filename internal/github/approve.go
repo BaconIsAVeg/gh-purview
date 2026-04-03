@@ -17,7 +17,7 @@ func (c *Client) ApprovePR(ctx context.Context, pr *types.PR) error {
 		Event: github.String("APPROVE"),
 	}
 
-	_, _, err := c.client.PullRequests.CreateReview(ctx, pr.Org, pr.Repo, pr.Number, review)
+	_, _, err := c.REST().PullRequests.CreateReview(ctx, pr.Org, pr.Repo, pr.Number, review)
 	if err != nil {
 		debugPrint("Approve PR error: %v", err)
 		return fmt.Errorf("failed to approve PR: %w", err)

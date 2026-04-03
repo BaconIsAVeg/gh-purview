@@ -6,7 +6,7 @@ import (
 
 	"github.com/BaconIsAVeg/gh-purview/internal/github"
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
-	"github.com/BaconIsAVeg/gh-purview/internal/ui/styles"
+	"github.com/BaconIsAVeg/github-tuis/ui/styles"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"

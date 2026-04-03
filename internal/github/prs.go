@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/BaconIsAVeg/gh-purview/internal/debug"
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
+	"github.com/BaconIsAVeg/github-tuis/debug"
 	"github.com/google/go-github/v82/github"
 )
 
@@ -17,7 +17,7 @@ func debugPrint(format string, args ...interface{}) {
 const prSearchQuery = "is:pr is:open -is:draft review-requested:@me sort:updated-desc"
 
 func (c *Client) FetchPRs(ctx context.Context) ([]types.PR, int, error) {
-	if c.graphqlClient != nil {
+	if c.GraphQL() != nil {
 		return c.FetchPRsGraphQL(ctx)
 	}
 	return c.FetchPRsREST(ctx)
@@ -41,7 +41,7 @@ func (c *Client) FetchPRsREST(ctx context.Context) ([]types.PR, int, error) {
 	page := 1
 	for {
 		debugPrint("Fetching page %d...", page)
-		result, resp, err := c.client.Search.Issues(ctx, query, opts)
+		result, resp, err := c.REST().Search.Issues(ctx, query, opts)
 		if err != nil {
 			debugPrint("Search error: %v", err)
 			return nil, 0, fmt.Errorf("search failed: %w", err)

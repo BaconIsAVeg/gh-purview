@@ -88,7 +88,7 @@ func (c *Client) FetchPRsGraphQL(ctx context.Context) ([]types.PR, int, error) {
 }
 
 func (c *Client) fetchPRsPage(ctx context.Context, query string, first int, after string) ([]types.PR, int, string, error) {
-	if c.graphqlClient == nil {
+	if c.GraphQL() == nil {
 		return nil, 0, "", fmt.Errorf("GraphQL client not initialized")
 	}
 
@@ -105,7 +105,7 @@ func (c *Client) fetchPRsPage(ctx context.Context, query string, first int, afte
 	debugPrint("GraphQL variables: %+v", variables)
 
 	var response graphqlSearchResponse
-	err := c.graphqlClient.Do(graphQLQuery, variables, &response)
+	err := c.GraphQL().Do(graphQLQuery, variables, &response)
 	if err != nil {
 		debugPrint("GraphQL error: %v", err)
 		return nil, 0, "", fmt.Errorf("GraphQL query failed: %w", err)
