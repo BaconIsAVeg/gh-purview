@@ -5,27 +5,27 @@ import (
 	"strings"
 
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
-	"github.com/BaconIsAVeg/github-tuis/ui/diffstyles"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/appstyles"
 	"github.com/BaconIsAVeg/github-tuis/ui/styles"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-	visible    bool
-	pr         *types.PR
-	width      int
-	height     int
-	styles     *styles.Palette
-	diffstyles *diffstyles.DiffPalette
-	viewport   viewport.Model
+	visible   bool
+	pr        *types.PR
+	width     int
+	height    int
+	styles    *styles.Palette
+	appstyles *appstyles.Palette
+	viewport  viewport.Model
 }
 
-func New(s *styles.Palette, ds *diffstyles.DiffPalette) Model {
+func New(s *styles.Palette, as *appstyles.Palette) Model {
 	return Model{
-		styles:     s,
-		diffstyles: ds,
-		viewport:   viewport.New(0, 0),
+		styles:    s,
+		appstyles: as,
+		viewport:  viewport.New(0, 0),
 	}
 }
 
@@ -138,13 +138,13 @@ func (m *Model) colorizeLine(line string) string {
 		strings.HasPrefix(line, "index "),
 		strings.HasPrefix(line, "--- "),
 		strings.HasPrefix(line, "+++ "):
-		return m.diffstyles.FileHeader.Render(line)
+		return m.appstyles.FileHeader.Render(line)
 	case strings.HasPrefix(line, "@@"):
-		return m.diffstyles.Header.Render(line)
+		return m.appstyles.Header.Render(line)
 	case strings.HasPrefix(line, "+"):
-		return m.diffstyles.Add.Render(line)
+		return m.appstyles.Add.Render(line)
 	case strings.HasPrefix(line, "-"):
-		return m.diffstyles.Delete.Render(line)
+		return m.appstyles.Delete.Render(line)
 	default:
 		return line
 	}

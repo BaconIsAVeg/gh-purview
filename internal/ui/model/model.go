@@ -10,10 +10,10 @@ import (
 
 	"github.com/BaconIsAVeg/gh-purview/internal/github"
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/appstyles"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/preview"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/prlist"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/statusbar"
-	"github.com/BaconIsAVeg/github-tuis/ui/diffstyles"
 	"github.com/BaconIsAVeg/github-tuis/ui/header"
 	"github.com/BaconIsAVeg/github-tuis/ui/helpers"
 	"github.com/BaconIsAVeg/github-tuis/ui/notification"
@@ -40,7 +40,7 @@ type Model struct {
 func New(ghClient *github.Client) Model {
 	hasDarkBg := lipgloss.HasDarkBackground()
 	s := styles.NewPalette(hasDarkBg)
-	ds := diffstyles.NewDiffPalette(hasDarkBg)
+	as := appstyles.NewPalette(hasDarkBg)
 	h := header.New(s)
 	h.SetLeft("filter")
 	sb := statusbar.New(s)
@@ -49,8 +49,8 @@ func New(ghClient *github.Client) Model {
 	notif.Set("Please wait...", notification.TypeInfo)
 	return Model{
 		header:       h,
-		prlist:       prlist.New(s),
-		preview:      preview.New(s, ds),
+		prlist:       prlist.New(s, as),
+		preview:      preview.New(s, as),
 		statusbar:    sb,
 		notification: notif,
 		styles:       s,

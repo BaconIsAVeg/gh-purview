@@ -3,7 +3,7 @@ module github.com/BaconIsAVeg/gh-purview
 go 1.25.0
 
 require (
-	github.com/BaconIsAVeg/github-tuis v0.1.0
+	github.com/BaconIsAVeg/github-tuis v0.2.0
 	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250319133953-166f707985bc

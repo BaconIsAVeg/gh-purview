@@ -6,6 +6,7 @@ import (
 
 	"github.com/BaconIsAVeg/gh-purview/internal/github"
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
+	"github.com/BaconIsAVeg/gh-purview/internal/ui/appstyles"
 	"github.com/BaconIsAVeg/github-tuis/ui/styles"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -20,12 +21,13 @@ const (
 )
 
 type Model struct {
-	prs    []types.PR
-	cursor int
-	offset int
-	width  int
-	height int
-	styles *styles.Palette
+	prs       []types.PR
+	cursor    int
+	offset    int
+	width     int
+	height    int
+	styles    *styles.Palette
+	appstyles *appstyles.Palette
 }
 
 type KeyMap struct {
@@ -46,9 +48,10 @@ func DefaultKeyMap() KeyMap {
 	}
 }
 
-func New(s *styles.Palette) Model {
+func New(s *styles.Palette, as *appstyles.Palette) Model {
 	return Model{
-		styles: s,
+		styles:    s,
+		appstyles: as,
 	}
 }
 
@@ -143,7 +146,7 @@ func (m Model) View() string {
 // renderEmptyState renders the list when there are no PRs to display.
 func (m Model) renderEmptyState() string {
 	var b strings.Builder
-	b.WriteString(m.styles.PRMeta.Render(""))
+	b.WriteString(m.appstyles.PRMeta.Render(""))
 	for i := 1; i < m.height; i++ {
 		b.WriteByte('\n')
 	}
@@ -153,20 +156,20 @@ func (m Model) renderEmptyState() string {
 func (m Model) renderLine1(pr types.PR, selected bool) string {
 	cursor := "  "
 	if selected {
-		cursor = m.styles.PRNumber.Render(" ┌")
+		cursor = m.appstyles.PRNumber.Render(" ┌")
 	}
-	num := m.styles.PRNumber.Render(fmt.Sprintf("#%d", pr.Number))
-	title := m.styles.PRTitle.Render(truncate(pr.Title, m.width-titlePadding))
+	num := m.appstyles.PRNumber.Render(fmt.Sprintf("#%d", pr.Number))
+	title := m.appstyles.PRTitle.Render(truncate(pr.Title, m.width-titlePadding))
 	return lipgloss.JoinHorizontal(lipgloss.Left, cursor, " ", num, " ", title)
 }
 
 func (m Model) renderLine2(pr types.PR, selected bool) string {
 	cursor := "   "
 	if selected {
-		cursor = m.styles.PRNumber.Render(" └ ")
+		cursor = m.appstyles.PRNumber.Render(" └ ")
 	}
-	repo := m.styles.PRMeta.Render(pr.RepoPath())
-	author := m.styles.PRMeta.Render(pr.Author)
+	repo := m.appstyles.PRMeta.Render(pr.RepoPath())
+	author := m.appstyles.PRMeta.Render(pr.Author)
 	review := m.renderReviewDecision(pr.ReviewDecision)
 	status := m.renderStatus(pr.Status)
 	return lipgloss.JoinHorizontal(lipgloss.Left, cursor, repo, " ", author, " ", status, review)
@@ -175,11 +178,11 @@ func (m Model) renderLine2(pr types.PR, selected bool) string {
 func (m Model) renderReviewDecision(decision string) string {
 	switch decision {
 	case string(github.ReviewApproved):
-		return m.styles.ReviewApproved.Render(" ✓")
+		return m.appstyles.ReviewApproved.Render(" ✓")
 	case string(github.ReviewChangesRequested):
-		return m.styles.ReviewChanges.Render(" ✗")
+		return m.appstyles.ReviewChanges.Render(" ✗")
 	case string(github.ReviewRequired):
-		return m.styles.ReviewRequired.Render(" ~")
+		return m.appstyles.ReviewRequired.Render(" ~")
 	default:
 		return ""
 	}
@@ -188,11 +191,11 @@ func (m Model) renderReviewDecision(decision string) string {
 func (m Model) renderStatus(status types.PRStatus) string {
 	switch status {
 	case types.StatusOpen:
-		return m.styles.StatusOpen.Render("OPEN")
+		return m.styles.StatusPass.Render("OPEN")
 	case types.StatusClosed:
-		return m.styles.StatusClosed.Render("CLOSED")
+		return m.styles.StatusFail.Render("CLOSED")
 	case types.StatusMerged:
-		return m.styles.StatusMerged.Render("MERGED")
+		return m.styles.StatusPending.Render("MERGED")
 	default:
 		return string(status)
 	}
