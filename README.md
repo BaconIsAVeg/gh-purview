@@ -4,6 +4,8 @@ A terminal UI for browsing and approving GitHub pull requests.
 
 This isn't designed to be a complete review tool, I created it specifically to address handling dozens of tiny dependency updates across the 240+ repositories in our organization without wanting to open each of them up in GitHub's declining web interface.
 
+![screenshot](screenshot.png)
+
 ## Installation
 
 ### As a GitHub CLI extension
