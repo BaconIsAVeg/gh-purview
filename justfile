@@ -10,13 +10,13 @@ ldflags := "-ldflags '-s -w'"
 
 default: build
 
-build:
+build: clean fmt vet test
     {{ go }} build {{ goflags }} {{ ldflags }} -o {{ build_dir }}/{{ binary_name }} {{ main_path }}
 
-build-waybar:
+build-waybar: clean fmt vet test
     {{ go }} build {{ goflags }} {{ ldflags }} -o {{ build_dir }}/{{ waybar_binary }} {{ waybar_path }}
 
-install-waybar:
+install-waybar: build-waybar
     {{ go }} build {{ goflags }} {{ ldflags }} -o `go env GOPATH`/bin/{{ waybar_binary }} {{ waybar_path }}
     @echo "Installed {{ waybar_binary }} to `go env GOPATH`/bin"
 
