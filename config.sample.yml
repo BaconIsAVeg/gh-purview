@@ -1,0 +1,22 @@
+# Sample configuration file for gh-purview.
+# Copy to $XDG_CONFIG_HOME/gh-purview/config.yml and edit as needed.
+# On Linux this is usually ~/.config/gh-purview/config.yml
+
+# Optional: overrides the built-in default query used when no --filter flag
+# is given and there is no resume state. If omitted, the built-in default
+# (is:pr is:open -is:draft review-requested:@me sort:updated-desc) is used.
+default:
+  query: "is:pr is:open -is:draft review-requested:@me sort:updated-desc"
+
+# Named filters selectable via the --filter <name> flag, e.g.:
+#   gh-purview --filter mine
+filters:
+  # PRs you opened
+  mine:
+    query: "is:pr is:open author:@me sort:updated-desc"
+  # Open drafts you own
+  my-drafts:
+    query: "is:pr is:open draft:true author:@me"
+  # PRs across an entire organization
+  org:
+    query: "is:pr is:open org:myorg sort:updated-desc"

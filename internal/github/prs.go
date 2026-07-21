@@ -14,7 +14,11 @@ func debugPrint(format string, args ...interface{}) {
 	debug.Print(format, args...)
 }
 
-const prSearchQuery = "is:pr is:open -is:draft review-requested:@me sort:updated-desc"
+// DefaultQuery is the built-in GitHub search query used when no config is
+// present. Exported so other packages (config seeding) can reuse it.
+const DefaultQuery = "is:pr is:open -is:draft review-requested:@me sort:updated-desc"
+
+const prSearchQuery = DefaultQuery
 
 func (c *Client) FetchPRs(ctx context.Context) ([]types.PR, int, error) {
 	if c.GraphQL() != nil {

@@ -9,6 +9,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250319133953-166f707985bc
 	github.com/google/go-github/v82 v82.0.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -43,5 +44,4 @@ require (
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
