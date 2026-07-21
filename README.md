@@ -68,3 +68,22 @@ The filter uses standard GitHub search syntax. Some useful examples:
 - `label:bug` - PRs with a specific label
 
 See [GitHub's search documentation](https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests) for more options.
+
+## Saved Filters
+
+Frequently used queries can be saved as named filters in a config file at `$XDG_CONFIG_HOME/gh-purview/config.yml` (typically `~/.config/gh-purview/config.yml`). On first run, if no config file exists, gh-purview creates this directory and file automatically with the built-in default filter so you can simply edit it in place. See [`config.sample.yml`](config.sample.yml) for a ready-to-edit template with additional example filters.
+
+```yaml
+default:
+  query: "is:pr is:open -is:draft review-requested:@me sort:updated-desc"
+
+filters:
+  mine:
+    query: "is:pr is:open author:@me sort:updated-desc"
+```
+
+- **`--filter <name>`** - start with a saved filter, e.g. `gh-purview --filter mine`. An unknown name exits with an error.
+- **`--filter default`** - explicitly use the `default:` section.
+- With no flag, the app resumes the last query you applied via the in-app `f` edit; otherwise the `default:` section (or the built-in default) is used.
+
+The last query applied through the in-app filter editor is persisted to `$XDG_CACHE_HOME/gh-purview/last.yml` so the next launch picks up where you left off. This is app-managed state and may be deleted safely.

@@ -8,12 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BaconIsAVeg/gh-purview/internal/config"
 	"github.com/BaconIsAVeg/gh-purview/internal/github"
 	"github.com/BaconIsAVeg/gh-purview/internal/types"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/appstyles"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/preview"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/prlist"
 	"github.com/BaconIsAVeg/gh-purview/internal/ui/statusbar"
+	"github.com/BaconIsAVeg/github-tuis/debug"
 	"github.com/BaconIsAVeg/github-tuis/ui/header"
 	"github.com/BaconIsAVeg/github-tuis/ui/helpers"
 	"github.com/BaconIsAVeg/github-tuis/ui/notification"
@@ -31,13 +33,14 @@ type Model struct {
 	notification notification.Model
 	styles       *styles.Palette
 	ghClient     *github.Client
+	activeFilter string
 	width        int
 	height       int
 	ready        bool
 	loading      bool
 }
 
-func New(ghClient *github.Client) Model {
+func New(ghClient *github.Client, activeFilter string) Model {
 	hasDarkBg := lipgloss.HasDarkBackground()
 	s := styles.NewPalette(hasDarkBg)
 	as := appstyles.NewPalette(hasDarkBg)
@@ -55,6 +58,7 @@ func New(ghClient *github.Client) Model {
 		notification: notif,
 		styles:       s,
 		ghClient:     ghClient,
+		activeFilter: activeFilter,
 		loading:      true,
 	}
 }
@@ -211,6 +215,12 @@ func (m *Model) handleKey(msg tea.KeyMsg) []tea.Cmd {
 			newFilter := m.header.StopEditing()
 			m.ghClient.SetQuery(newFilter)
 			m.header.SetMiddle(m.ghClient.Query())
+			if err := config.SaveLast(&config.Last{
+				Query:  newFilter,
+				Filter: m.activeFilter,
+			}); err != nil {
+				debug.Print("persist last filter: %v", err)
+			}
 			m.loading = true
 			cmds = append(cmds, m.notification.ShowInfo("Please wait..."))
 			cmds = append(cmds, m.loadPRs())
